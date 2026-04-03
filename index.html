@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Assisted Expense Tracker | Dashboard</title>
+    <title>AI-Assisted Expense Tracker | Smart Dashboard</title>
     <!-- Chart.js for Analytics -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -11,16 +11,21 @@
 <body>
     <!-- Main Application Container -->
     <div id="app" class="container">
-        <header>
-            <h1>Personal Finance Tracker</h1>
-            <p class="subtitle">Smart insights for your daily spending.</p>
+        <header class="dashboard-header">
+            <div class="header-content">
+                <h1>Financial Assistant</h1>
+                <p class="subtitle">Intelligent insights for your spending.</p>
+            </div>
+            <div class="header-actions">
+                <button id="settings-btn" class="icon-btn" title="AI Settings">⚙️</button>
+            </div>
         </header>
 
         <div class="dashboard-grid">
-            <!-- Left Column: Entry & Summary -->
+            <!-- Left Column: Entry & Budget -->
             <div class="dashboard-sidebar">
                 <section id="expense-form-section" class="app-section">
-                    <h2>Add New Expense</h2>
+                    <h2>Track New Expense</h2>
                     <form id="expense-form">
                         <div class="form-group">
                             <label for="amount">Amount</label>
@@ -56,9 +61,28 @@
                     </form>
                 </section>
 
+                <section id="budget-section" class="app-section">
+                    <h2>Monthly Budget</h2>
+                    <div class="budget-controls">
+                        <div class="form-group">
+                            <label for="monthly-budget">Set Budget</label>
+                            <input type="number" id="monthly-budget" placeholder="Enter budget (e.g., 5000)">
+                        </div>
+                    </div>
+                    <div class="budget-status">
+                        <div class="progress-container">
+                            <div id="budget-progress" class="progress-bar"></div>
+                        </div>
+                        <p id="budget-message" class="budget-text">Set a budget to track progress.</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Column: Analytics & AI Insights -->
+            <div class="dashboard-main">
                 <section id="summary-section" class="app-section">
                     <div class="summary-header">
-                        <h2>Summary</h2>
+                        <h2>Quick Summary</h2>
                         <div class="currency-selector">
                             <select id="currency-select">
                                 <option value="INR" selected>INR (₹)</option>
@@ -70,45 +94,70 @@
                     </div>
                     
                     <div class="summary-card">
-                        <p>Total Filtered Spent</p>
+                        <p>Total Spent (Filtered)</p>
                         <h3 id="total-amount">₹0.00</h3>
                     </div>
                 </section>
-            </div>
 
-            <!-- Right Column: Analytics & Filters -->
-            <div class="dashboard-main">
                 <section id="analytics-section" class="app-section">
-                    <h2>Spending Analytics</h2>
+                    <h2>Spending Analysis</h2>
                     <div class="chart-container">
                         <canvas id="expense-chart"></canvas>
                     </div>
                 </section>
 
-                <section id="filter-section" class="app-section">
-                    <div class="filter-header">
-                        <h2>Range Filter</h2>
-                        <button id="clear-filters" class="text-btn">Clear All</button>
+                <section id="ai-insights-section" class="app-section ai-card">
+                    <div class="ai-header">
+                        <h2>AI Smart Insights</h2>
+                        <button id="refresh-ai" class="icon-btn" title="Refresh AI Analysis">🔄</button>
                     </div>
-                    <div class="filter-controls">
-                        <div class="filter-group">
-                            <label for="filter-from">From</label>
-                            <input type="date" id="filter-from">
-                        </div>
-                        <div class="filter-group">
-                            <label for="filter-to">To</label>
-                            <input type="date" id="filter-to">
-                        </div>
+                    <div id="ai-content" class="ai-body">
+                        <p class="placeholder-text">Add your Groq API Key in settings to enable smarter spending insights.</p>
                     </div>
                 </section>
             </div>
         </div>
 
+        <!-- Filters Section -->
+        <section id="filter-section" class="app-section full-width">
+            <div class="filter-header">
+                <h2>Advanced Filters</h2>
+                <button id="clear-filters" class="text-btn">Reset All Filters</button>
+            </div>
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="filter-category">Category</label>
+                    <select id="filter-category">
+                        <option value="All">All Categories</option>
+                        <option value="Food & Drink">Food & Drink</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Health">Health</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Education">Education</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filter-from">From</label>
+                    <input type="date" id="filter-from">
+                </div>
+                <div class="filter-group">
+                    <label for="filter-to">To</label>
+                    <input type="date" id="filter-to">
+                </div>
+            </div>
+        </section>
+
         <!-- Expense List Section -->
         <section id="expense-list-section" class="app-section full-width">
-            <h2>Transaction History</h2>
+            <div class="section-header">
+                <h2>Transaction History</h2>
+                <button id="download-csv" class="btn secondary-btn">📥 Download CSV</button>
+            </div>
             <div class="table-container">
-                <table id="expense-table">
+                <table id="expense-table" class="responsive-table">
                     <thead>
                         <tr>
                             <th>Date</th>
@@ -119,17 +168,17 @@
                         </tr>
                     </thead>
                     <tbody id="expense-list">
-                        <!-- Dynamic list items will be injected here -->
+                        <!-- Dynamic items injected here -->
                     </tbody>
                 </table>
             </div>
             <div id="empty-state" class="hidden">
-                <p class="placeholder-text">No transactions found for this period.</p>
+                <p class="placeholder-text">No transactions match your filters.</p>
             </div>
         </section>
 
         <footer>
-            <p>&copy; 2026 AI-Assisted Expense Tracker | Built for clarity.</p>
+            <p>&copy; 2026 Financial Assistant | Privacy & Security First</p>
         </footer>
     </div>
 
@@ -146,9 +195,10 @@
                     <label for="edit-amount">Amount</label>
                     <input type="number" id="edit-amount" step="0.01" required>
                 </div>
+                <!-- Other fields added via JS or cloned if needed -->
                 <div class="form-group">
                     <label for="edit-category">Category</label>
-                    <select id="edit-category" required>
+                    <select id="edit-category" id="edit-category" required>
                         <option value="Food & Drink">Food & Drink</option>
                         <option value="Transport">Transport</option>
                         <option value="Housing">Housing</option>
@@ -172,6 +222,27 @@
                     <button type="submit" class="save-btn highlight-btn">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>AI Assistant Settings</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="groq-api-key">Groq API Key</label>
+                    <input type="password" id="groq-api-key" placeholder="gsk_...">
+                    <small>Get your key at <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>. Key is stored locally in your browser.</small>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button id="clear-api-key" class="btn delete-btn">Clear Key</button>
+                <button id="save-settings" class="btn highlight-btn">Save Settings</button>
+            </div>
         </div>
     </div>
 
