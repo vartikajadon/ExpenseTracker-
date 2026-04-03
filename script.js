@@ -62,10 +62,35 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td><span class="category-badge">${expense.category}</span></td>
                 <td class="amount-cell">$${expense.amount.toFixed(2)}</td>
                 <td>${expense.note || '-'}</td>
+                <td>
+                    <button class="delete-btn" data-id="${expense.id}">Delete</button>
+                </td>
             `;
             
             expenseListContainer.appendChild(row);
         });
+    };
+
+    /**
+     * Deletes an expense from the list and storage.
+     * @param {number} id - The unique ID of the expense to delete.
+     */
+    const deleteExpense = (id) => {
+        // Ask for confirmation before deleting
+        const isConfirmed = confirm("Are you sure you want to delete this expense?");
+        
+        if (isConfirmed) {
+            // Filter out the expense with the given ID
+            expenses = expenses.filter(expense => expense.id !== id);
+            
+            // Save updated array to localStorage
+            saveToLocalStorage();
+            
+            // Re-render the list
+            renderExpenses();
+            
+            console.log("Expense deleted successfully. ID:", id);
+        }
     };
 
     /**
@@ -118,5 +143,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event Listeners
     if (expenseForm) {
         expenseForm.addEventListener('submit', handleFormSubmit);
+    }
+
+    // Event Delegation: Listen for clicks on the table body to handle deletions
+    if (expenseListContainer) {
+        expenseListContainer.addEventListener('click', (event) => {
+            // Check if the clicked element is a delete button
+            if (event.target.classList.contains('delete-btn')) {
+                // Get the ID from the data attribute (ensure it's a number)
+                const idToDelete = Number(event.target.dataset.id);
+                deleteExpense(idToDelete);
+            }
+        });
     }
 });

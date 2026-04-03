@@ -179,6 +179,24 @@ textarea {
     font-weight: 600;
 }
 
+.delete-btn {
+    background: none;
+    border: 1px solid #fee2e2;
+    color: #ef4444;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-btn:hover {
+    background-color: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
 /* Empty State & Utilities */
 .hidden {
     display: none;
