@@ -128,7 +128,62 @@ textarea {
     transform: scale(0.98);
 }
 
-/* Placeholder Styling */
+/* Table Styling */
+.table-container {
+    overflow-x: auto;
+    margin-top: 0.5rem;
+}
+
+#expense-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+#expense-table th {
+    background-color: #f1f5f9;
+    color: var(--secondary-text);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+#expense-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.9375rem;
+    color: var(--text-color);
+}
+
+#expense-table tr:last-child td {
+    border-bottom: none;
+}
+
+#expense-table tr:hover {
+    background-color: #f8fafc;
+}
+
+.amount-cell {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.category-badge {
+    background-color: #eef2ff;
+    color: var(--primary-color);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* Empty State & Utilities */
+.hidden {
+    display: none;
+}
+
 .placeholder-text {
     color: var(--secondary-text);
     font-size: 1rem;

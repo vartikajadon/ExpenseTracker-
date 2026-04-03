@@ -63,9 +63,23 @@
         <!-- Expense List Section -->
         <section id="expense-list-section" class="app-section">
             <h2>Transaction History</h2>
-            <div id="expense-list-placeholder">
-                <!-- Transaction list will be implemented here -->
-                <p class="placeholder-text">Expense list ready for features.</p>
+            <div class="table-container">
+                <table id="expense-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Note</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expense-list">
+                        <!-- Dynamic list items will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="empty-state" class="hidden">
+                <p class="placeholder-text">No expenses yet. Start adding some!</p>
             </div>
         </section>
 
