@@ -3,76 +3,109 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Assisted Expense Tracker</title>
+    <title>AI-Assisted Expense Tracker | Dashboard</title>
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Main Application Container -->
     <div id="app" class="container">
         <header>
-            <h1>AI-Assisted Expense Tracker</h1>
-            <p class="subtitle">A simple tool to track and manage your daily spending.</p>
+            <h1>Personal Finance Tracker</h1>
+            <p class="subtitle">Smart insights for your daily spending.</p>
         </header>
 
-        <section id="expense-form-section" class="app-section">
-            <h2>Add New Expense</h2>
-            <form id="expense-form">
-                <div class="form-group">
-                    <label for="amount">Amount</label>
-                    <input type="number" id="amount" step="0.01" placeholder="0.00" required>
-                </div>
+        <div class="dashboard-grid">
+            <!-- Left Column: Entry & Summary -->
+            <div class="dashboard-sidebar">
+                <section id="expense-form-section" class="app-section">
+                    <h2>Add New Expense</h2>
+                    <form id="expense-form">
+                        <div class="form-group">
+                            <label for="amount">Amount</label>
+                            <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                        </div>
 
-                <div class="form-group">
-                    <label for="category">Category</label>
-                    <select id="category" required>
-                        <option value="" disabled selected>Select a category</option>
-                        <option value="Food & Drink">Food & Drink</option>
-                        <option value="Transport">Transport</option>
-                        <option value="Housing">Housing</option>
-                        <option value="Health">Health</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Education">Education</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
+                        <div class="form-group">
+                            <label for="category">Category</label>
+                            <select id="category" required>
+                                <option value="" disabled selected>Select a category</option>
+                                <option value="Food & Drink">Food & Drink</option>
+                                <option value="Transport">Transport</option>
+                                <option value="Housing">Housing</option>
+                                <option value="Health">Health</option>
+                                <option value="Entertainment">Entertainment</option>
+                                <option value="Shopping">Shopping</option>
+                                <option value="Education">Education</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
 
-                <div class="form-group">
-                    <label for="date">Date*</label>
-                    <input type="date" id="date" required>
-                </div>
+                        <div class="form-group">
+                            <label for="date">Date*</label>
+                            <input type="date" id="date" required>
+                        </div>
 
-                <div class="form-group">
-                    <label for="note">Note (Optional)</label>
-                    <textarea id="note" placeholder="What was this for?"></textarea>
-                </div>
+                        <div class="form-group">
+                            <label for="note">Note (Optional)</label>
+                            <textarea id="note" placeholder="What was this for?"></textarea>
+                        </div>
 
-                <button type="submit" class="submit-btn">Add Expense</button>
-            </form>
-        </section>
+                        <button type="submit" class="submit-btn highlight-btn">Add Expense</button>
+                    </form>
+                </section>
 
-        <section id="summary-section" class="app-section">
-            <div class="summary-header">
-                <h2>Financial Summary</h2>
-                <div class="currency-selector">
-                    <label for="currency-select">Currency:</label>
-                    <select id="currency-select">
-                        <option value="INR" selected>INR (₹)</option>
-                        <option value="USD">USD ($)</option>
-                        <option value="EUR">EUR (€)</option>
-                        <option value="GBP">GBP (£)</option>
-                    </select>
-                </div>
+                <section id="summary-section" class="app-section">
+                    <div class="summary-header">
+                        <h2>Summary</h2>
+                        <div class="currency-selector">
+                            <select id="currency-select">
+                                <option value="INR" selected>INR (₹)</option>
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-card">
+                        <p>Total Filtered Spent</p>
+                        <h3 id="total-amount">₹0.00</h3>
+                    </div>
+                </section>
             </div>
-            
-            <div class="summary-card">
-                <p>Total Spent</p>
-                <h3 id="total-amount">₹0.00</h3>
+
+            <!-- Right Column: Analytics & Filters -->
+            <div class="dashboard-main">
+                <section id="analytics-section" class="app-section">
+                    <h2>Spending Analytics</h2>
+                    <div class="chart-container">
+                        <canvas id="expense-chart"></canvas>
+                    </div>
+                </section>
+
+                <section id="filter-section" class="app-section">
+                    <div class="filter-header">
+                        <h2>Range Filter</h2>
+                        <button id="clear-filters" class="text-btn">Clear All</button>
+                    </div>
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label for="filter-from">From</label>
+                            <input type="date" id="filter-from">
+                        </div>
+                        <div class="filter-group">
+                            <label for="filter-to">To</label>
+                            <input type="date" id="filter-to">
+                        </div>
+                    </div>
+                </section>
             </div>
-        </section>
+        </div>
 
         <!-- Expense List Section -->
-        <section id="expense-list-section" class="app-section">
+        <section id="expense-list-section" class="app-section full-width">
             <h2>Transaction History</h2>
             <div class="table-container">
                 <table id="expense-table">
@@ -91,13 +124,55 @@
                 </table>
             </div>
             <div id="empty-state" class="hidden">
-                <p class="placeholder-text">No expenses yet. Start adding some!</p>
+                <p class="placeholder-text">No transactions found for this period.</p>
             </div>
         </section>
 
         <footer>
-            <p>&copy; 2026 AI-Assisted Expense Tracker</p>
+            <p>&copy; 2026 AI-Assisted Expense Tracker | Built for clarity.</p>
         </footer>
+    </div>
+
+    <!-- Edit Expense Modal -->
+    <div id="edit-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Transaction</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <form id="edit-form">
+                <input type="hidden" id="edit-id">
+                <div class="form-group">
+                    <label for="edit-amount">Amount</label>
+                    <input type="number" id="edit-amount" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-category">Category</label>
+                    <select id="edit-category" required>
+                        <option value="Food & Drink">Food & Drink</option>
+                        <option value="Transport">Transport</option>
+                        <option value="Housing">Housing</option>
+                        <option value="Health">Health</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Education">Education</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-date">Date</label>
+                    <input type="date" id="edit-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-note">Note</label>
+                    <textarea id="edit-note"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="cancel-btn close-modal">Cancel</button>
+                    <button type="submit" class="save-btn highlight-btn">Save Changes</button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Application Script -->

@@ -1,24 +1,24 @@
 /**
- * AI-Assisted Expense Tracker
- * 
- * This script handles the initialization and future logic 
- * for the AI-Assisted Expense Tracker application.
+ * AI-Assisted Expense Tracker | Advanced Dashboard Logic
+ * Handles state, analytics (Chart.js), filtering, and CRUD operations.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // State: Array to hold all expense objects
+    // --- State Management ---
     let expenses = [];
     let selectedCurrency = 'INR';
+    let expenseChart = null; // Chart.js instance
+    let filters = { from: '', to: '' };
 
-    // Currency Symbols Mapping
-    const currencySymbols = {
-        INR: '₹',
-        USD: '$',
-        EUR: '€',
-        GBP: '£'
-    };
+    // --- Configuration ---
+    const currencySymbols = { INR: '₹', USD: '$', EUR: '€', GBP: '£' };
+    const categories = ["Food & Drink", "Transport", "Housing", "Health", "Entertainment", "Shopping", "Education", "Other"];
+    const categoryColors = [
+        '#4f46e5', '#10b981', '#f59e0b', '#ef4444', 
+        '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'
+    ];
 
-    // Select DOM elements
+    // --- DOM Elements ---
     const expenseForm = document.getElementById('expense-form');
     const expenseListContainer = document.getElementById('expense-list');
     const emptyState = document.getElementById('empty-state');
@@ -26,183 +26,243 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalAmountDisplay = document.getElementById('total-amount');
     const currencySelect = document.getElementById('currency-select');
     const dateInput = document.getElementById('date');
+    
+    // Filter Elements
+    const filterFrom = document.getElementById('filter-from');
+    const filterTo = document.getElementById('filter-to');
+    const clearFiltersBtn = document.getElementById('clear-filters');
 
-    /**
-     * Sets the maximum selectable date to today's date.
-     * This prevents users from adding future expenses.
-     */
-    const setMaxDate = () => {
-        const today = new Date().toISOString().split('T')[0];
-        if (dateInput) {
-            dateInput.max = today;
-        }
+    // Modal Elements
+    const editModal = document.getElementById('edit-modal');
+    const editForm = document.getElementById('edit-form');
+    const closeModalBtns = document.querySelectorAll('.close-modal');
+
+    // --- Initialization ---
+    const init = () => {
+        setMaxDate(dateInput);
+        setMaxDate(filterFrom);
+        setMaxDate(filterTo);
+        loadFromLocalStorage();
+        initChart();
+        renderExpenses();
     };
 
     /**
-     * Loads expenses from localStorage on application start.
+     * Sets the maximum selectable date to today's date for an input.
      */
+    const setMaxDate = (element) => {
+        if (element) {
+            element.max = new Date().toISOString().split('T')[0];
+        }
+    };
+
+    // --- Data Persistence ---
     const loadFromLocalStorage = () => {
-        const savedExpenses = localStorage.getItem('expenses');
-        if (savedExpenses) {
-            expenses = JSON.parse(savedExpenses);
-        }
+        const saved = localStorage.getItem('expenses');
+        if (saved) expenses = JSON.parse(saved);
     };
 
-    /**
-     * Saves the current expenses array to localStorage.
-     */
     const saveToLocalStorage = () => {
         localStorage.setItem('expenses', JSON.stringify(expenses));
     };
 
-    /**
-     * Calculates the total sum of all expenses.
-     * @returns {number} The total amount.
-     */
-    const calculateTotal = () => {
-        return expenses.reduce((total, expense) => {
-            return total + (expense.amount || 0);
-        }, 0);
+    // --- Analytics (Chart.js) ---
+    const initChart = () => {
+        const ctx = document.getElementById('expense-chart').getContext('2d');
+        expenseChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: categories,
+                datasets: [{
+                    data: categories.map(() => 0),
+                    backgroundColor: categoryColors,
+                    borderWidth: 0,
+                    hoverOffset: 10
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { boxWidth: 12, padding: 20 } }
+                },
+                cutout: '70%'
+            }
+        });
     };
 
-    /**
-     * Updates the total spent summary display.
-     */
-    const updateSummary = () => {
-        const total = calculateTotal();
-        const symbol = currencySymbols[selectedCurrency];
-        totalAmountDisplay.textContent = `${symbol}${total.toFixed(2)}`;
-    };
-
-    /**
-     * Renders the list of expenses into the table.
-     */
-    const renderExpenses = () => {
-        // Clear current list items
-        expenseListContainer.innerHTML = '';
-
-        // Check if there are any expenses to display
-        if (expenses.length === 0) {
-            emptyState.classList.remove('hidden');
-            expenseTable.classList.add('hidden');
-            updateSummary();
-            return;
-        }
-
-        // Show table, hide empty state
-        emptyState.classList.add('hidden');
-        expenseTable.classList.remove('hidden');
-
-        // Sort: Latest added first
-        const sortedExpenses = [...expenses].reverse();
-
-        // Get current symbol
-        const symbol = currencySymbols[selectedCurrency];
-
-        // Build the table rows
-        sortedExpenses.forEach(expense => {
-            const row = document.createElement('tr');
-            
-            row.innerHTML = `
-                <td>${expense.date}</td>
-                <td><span class="category-badge">${expense.category}</span></td>
-                <td class="amount-cell">${symbol}${expense.amount.toFixed(2)}</td>
-                <td>${expense.note || '-'}</td>
-                <td>
-                    <button class="delete-btn" data-id="${expense.id}">Delete</button>
-                </td>
-            `;
-            
-            expenseListContainer.appendChild(row);
+    const updateChart = (data) => {
+        if (!expenseChart) return;
+        
+        // Aggregate totals by category
+        const totals = categories.map(cat => {
+            return data
+                .filter(exp => exp.category === cat)
+                .reduce((sum, exp) => sum + exp.amount, 0);
         });
 
-        // Update the overall summary
-        updateSummary();
+        expenseChart.data.datasets[0].data = totals;
+        expenseChart.update();
+    };
+
+    // --- Core Logic ---
+    const getFilteredExpenses = () => {
+        return expenses.filter(exp => {
+            const expDate = exp.date;
+            const fromMatch = !filters.from || expDate >= filters.from;
+            const pathMatch = !filters.to || expDate <= filters.to;
+            return fromMatch && pathMatch;
+        });
+    };
+
+    const calculateTotal = (data) => {
+        return data.reduce((sum, exp) => sum + (exp.amount || 0), 0);
     };
 
     /**
-     * Deletes an expense from the list and storage.
-     * @param {number} id - The unique ID of the expense to delete.
+     * Main Rendering Function
+     * Updates Table, Summary, and Chart based on current state & filters.
      */
-    const deleteExpense = (id) => {
-        const isConfirmed = confirm("Are you sure you want to delete this expense?");
+    const renderExpenses = () => {
+        const filteredData = getFilteredExpenses();
+        const symbol = currencySymbols[selectedCurrency];
+
+        // Clear and rebuild table
+        expenseListContainer.innerHTML = '';
         
-        if (isConfirmed) {
-            expenses = expenses.filter(expense => expense.id !== id);
-            saveToLocalStorage();
-            renderExpenses();
+        if (filteredData.length === 0) {
+            emptyState.classList.remove('hidden');
+            expenseTable.classList.add('hidden');
+        } else {
+            emptyState.classList.add('hidden');
+            expenseTable.classList.remove('hidden');
+            
+            // Newest first
+            [...filteredData].reverse().forEach(exp => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${exp.date}</td>
+                    <td><span class="category-badge">${exp.category}</span></td>
+                    <td class="amount-cell">${symbol}${exp.amount.toFixed(2)}</td>
+                    <td>${exp.note || '-'}</td>
+                    <td class="actions-cell">
+                        <button class="edit-btn" data-id="${exp.id}">Edit</button>
+                        <button class="delete-btn" data-id="${exp.id}">Delete</button>
+                    </td>
+                `;
+                expenseListContainer.appendChild(row);
+            });
         }
+
+        // Update Summary & Chart
+        const total = calculateTotal(filteredData);
+        totalAmountDisplay.textContent = `${symbol}${total.toFixed(2)}`;
+        updateChart(filteredData);
     };
 
-    /**
-     * Handles the form submission to create a new expense.
-     * @param {Event} event - The form submission event.
-     */
-    const handleFormSubmit = (event) => {
-        event.preventDefault();
+    // --- Event Handlers ---
 
-        const amountValue = document.getElementById('amount').value;
-        const categoryValue = document.getElementById('category').value;
-        const dateValue = document.getElementById('date').value;
-        const noteValue = document.getElementById('note').value;
+    // Submit New Expense
+    expenseForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById('amount').value);
+        const category = document.getElementById('category').value;
+        const date = document.getElementById('date').value;
+        const note = document.getElementById('note').value;
 
-        // Basic validation
-        if (!amountValue || !categoryValue || !dateValue) {
-            alert("Please fill in all required fields.");
+        if (date > new Date().toISOString().split('T')[0]) {
+            alert("Future dates are not allowed.");
             return;
         }
 
-        // Future date validation check
-        const today = new Date().toISOString().split('T')[0];
-        if (dateValue > today) {
-            alert("Error: Expense date cannot be in the future.");
-            return;
-        }
-
-        const newExpense = {
-            id: Date.now(),
-            amount: parseFloat(amountValue),
-            category: categoryValue,
-            date: dateValue,
-            note: noteValue
-        };
-
-        expenses.push(newExpense);
+        const newExp = { id: Date.now(), amount, category, date, note };
+        expenses.push(newExp);
         saveToLocalStorage();
         renderExpenses();
         expenseForm.reset();
+    });
+
+    // Handle Edit/Delete Button Clicks
+    expenseListContainer.addEventListener('click', (e) => {
+        const id = Number(e.target.dataset.id);
+        if (!id) return;
+
+        if (e.target.classList.contains('delete-btn')) {
+            if (confirm("Permanently delete this transaction?")) {
+                expenses = expenses.filter(exp => exp.id !== id);
+                saveToLocalStorage();
+                renderExpenses();
+            }
+        } else if (e.target.classList.contains('edit-btn')) {
+            openEditModal(id);
+        }
+    });
+
+    // Modal Operations
+    const openEditModal = (id) => {
+        const exp = expenses.find(e => e.id === id);
+        if (!exp) return;
+
+        document.getElementById('edit-id').value = id;
+        document.getElementById('edit-amount').value = exp.amount;
+        document.getElementById('edit-category').value = exp.category;
+        document.getElementById('edit-date').value = exp.date;
+        document.getElementById('edit-note').value = exp.note || '';
+        
+        editModal.classList.remove('hidden');
     };
 
-    /**
-     * Handles changes to the currency selector.
-     * @param {Event} event - The change event.
-     */
-    const handleCurrencyChange = (event) => {
-        selectedCurrency = event.target.value;
-        // Re-render everything to update symbols
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = Number(document.getElementById('edit-id').value);
+        const idx = expenses.findIndex(exp => exp.id === id);
+
+        if (idx > -1) {
+            expenses[idx] = {
+                ...expenses[idx],
+                amount: parseFloat(document.getElementById('edit-amount').value),
+                category: document.getElementById('edit-category').value,
+                date: document.getElementById('edit-date').value,
+                note: document.getElementById('edit-note').value
+            };
+            saveToLocalStorage();
+            renderExpenses();
+            editModal.classList.add('hidden');
+        }
+    });
+
+    closeModalBtns.forEach(btn => {
+        btn.addEventListener('click', () => editModal.classList.add('hidden'));
+    });
+
+    // Filters
+    const handleFilterUpdate = () => {
+        filters.from = filterFrom.value;
+        filters.to = filterTo.value;
+        
+        if (filters.from && filters.to && filters.from > filters.to) {
+            alert("'From' date must be before 'To' date.");
+            filterFrom.value = '';
+            filters.from = '';
+        }
         renderExpenses();
     };
 
-    // Initialization
-    setMaxDate();
-    loadFromLocalStorage();
-    renderExpenses();
+    filterFrom.addEventListener('change', handleFilterUpdate);
+    filterTo.addEventListener('change', handleFilterUpdate);
+    
+    clearFiltersBtn.addEventListener('click', () => {
+        filterFrom.value = '';
+        filterTo.value = '';
+        filters = { from: '', to: '' };
+        renderExpenses();
+    });
 
-    // Event Listeners
-    if (expenseForm) {
-        expenseForm.addEventListener('submit', handleFormSubmit);
-    }
+    currencySelect.addEventListener('change', (e) => {
+        selectedCurrency = e.target.value;
+        renderExpenses();
+    });
 
-    if (currencySelect) {
-        currencySelect.addEventListener('change', handleCurrencyChange);
-    }
-
-    if (expenseListContainer) {
-        expenseListContainer.addEventListener('click', (event) => {
-            if (event.target.classList.contains('delete-btn')) {
-                const idToDelete = Number(event.target.dataset.id);
-                deleteExpense(idToDelete);
-            }
-        });
-    }
+    // Start App
+    init();
 });
