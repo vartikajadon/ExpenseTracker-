@@ -8,12 +8,23 @@
 document.addEventListener('DOMContentLoaded', () => {
     // State: Array to hold all expense objects
     let expenses = [];
+    let selectedCurrency = 'INR';
+
+    // Currency Symbols Mapping
+    const currencySymbols = {
+        INR: '₹',
+        USD: '$',
+        EUR: '€',
+        GBP: '£'
+    };
 
     // Select DOM elements
     const expenseForm = document.getElementById('expense-form');
     const expenseListContainer = document.getElementById('expense-list');
     const emptyState = document.getElementById('empty-state');
     const expenseTable = document.getElementById('expense-table');
+    const totalAmountDisplay = document.getElementById('total-amount');
+    const currencySelect = document.getElementById('currency-select');
 
     /**
      * Loads expenses from localStorage on application start.
@@ -33,6 +44,25 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     /**
+     * Calculates the total sum of all expenses.
+     * @returns {number} The total amount.
+     */
+    const calculateTotal = () => {
+        return expenses.reduce((total, expense) => {
+            return total + (expense.amount || 0);
+        }, 0);
+    };
+
+    /**
+     * Updates the total spent summary display.
+     */
+    const updateSummary = () => {
+        const total = calculateTotal();
+        const symbol = currencySymbols[selectedCurrency];
+        totalAmountDisplay.textContent = `${symbol}${total.toFixed(2)}`;
+    };
+
+    /**
      * Renders the list of expenses into the table.
      */
     const renderExpenses = () => {
@@ -43,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (expenses.length === 0) {
             emptyState.classList.remove('hidden');
             expenseTable.classList.add('hidden');
+            updateSummary();
             return;
         }
 
@@ -50,8 +81,11 @@ document.addEventListener('DOMContentLoaded', () => {
         emptyState.classList.add('hidden');
         expenseTable.classList.remove('hidden');
 
-        // Create a copy of the array and reverse it to show newest expenses first
+        // Sort: Latest added first
         const sortedExpenses = [...expenses].reverse();
+
+        // Get current symbol
+        const symbol = currencySymbols[selectedCurrency];
 
         // Build the table rows
         sortedExpenses.forEach(expense => {
@@ -60,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             row.innerHTML = `
                 <td>${expense.date}</td>
                 <td><span class="category-badge">${expense.category}</span></td>
-                <td class="amount-cell">$${expense.amount.toFixed(2)}</td>
+                <td class="amount-cell">${symbol}${expense.amount.toFixed(2)}</td>
                 <td>${expense.note || '-'}</td>
                 <td>
                     <button class="delete-btn" data-id="${expense.id}">Delete</button>
@@ -69,6 +103,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             expenseListContainer.appendChild(row);
         });
+
+        // Update the overall summary
+        updateSummary();
     };
 
     /**
@@ -76,20 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
      * @param {number} id - The unique ID of the expense to delete.
      */
     const deleteExpense = (id) => {
-        // Ask for confirmation before deleting
         const isConfirmed = confirm("Are you sure you want to delete this expense?");
         
         if (isConfirmed) {
-            // Filter out the expense with the given ID
             expenses = expenses.filter(expense => expense.id !== id);
-            
-            // Save updated array to localStorage
             saveToLocalStorage();
-            
-            // Re-render the list
             renderExpenses();
-            
-            console.log("Expense deleted successfully. ID:", id);
         }
     };
 
@@ -100,19 +129,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const handleFormSubmit = (event) => {
         event.preventDefault();
 
-        // Get values from the form inputs
         const amountValue = document.getElementById('amount').value;
         const categoryValue = document.getElementById('category').value;
         const dateValue = document.getElementById('date').value;
         const noteValue = document.getElementById('note').value;
 
-        // Basic validation
         if (!amountValue || !categoryValue || !dateValue) {
             alert("Please fill in all required fields.");
             return;
         }
 
-        // Create the new expense object
         const newExpense = {
             id: Date.now(),
             amount: parseFloat(amountValue),
@@ -121,19 +147,20 @@ document.addEventListener('DOMContentLoaded', () => {
             note: noteValue
         };
 
-        // Add to our state array
         expenses.push(newExpense);
-
-        // Persistent storage
         saveToLocalStorage();
-
-        // Refresh the display immediately
         renderExpenses();
-
-        // Reset the form
         expenseForm.reset();
-        
-        console.log("Expense added successfully:", newExpense);
+    };
+
+    /**
+     * Handles changes to the currency selector.
+     * @param {Event} event - The change event.
+     */
+    const handleCurrencyChange = (event) => {
+        selectedCurrency = event.target.value;
+        // Re-render everything to update symbols
+        renderExpenses();
     };
 
     // Initialization
@@ -145,12 +172,13 @@ document.addEventListener('DOMContentLoaded', () => {
         expenseForm.addEventListener('submit', handleFormSubmit);
     }
 
-    // Event Delegation: Listen for clicks on the table body to handle deletions
+    if (currencySelect) {
+        currencySelect.addEventListener('change', handleCurrencyChange);
+    }
+
     if (expenseListContainer) {
         expenseListContainer.addEventListener('click', (event) => {
-            // Check if the clicked element is a delete button
             if (event.target.classList.contains('delete-btn')) {
-                // Get the ID from the data attribute (ensure it's a number)
                 const idToDelete = Number(event.target.dataset.id);
                 deleteExpense(idToDelete);
             }

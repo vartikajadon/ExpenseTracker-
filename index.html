@@ -51,12 +51,23 @@
             </form>
         </section>
 
-        <!-- Expense Summary Section -->
         <section id="summary-section" class="app-section">
-            <h2>Financial Summary</h2>
-            <div id="summary-placeholder">
-                <!-- Summary cards will be implemented here -->
-                <p class="placeholder-text">Summary statistics ready for features.</p>
+            <div class="summary-header">
+                <h2>Financial Summary</h2>
+                <div class="currency-selector">
+                    <label for="currency-select">Currency:</label>
+                    <select id="currency-select">
+                        <option value="INR" selected>INR (₹)</option>
+                        <option value="USD">USD ($)</option>
+                        <option value="EUR">EUR (€)</option>
+                        <option value="GBP">GBP (£)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="summary-card">
+                <p>Total Spent</p>
+                <h3 id="total-amount">₹0.00</h3>
             </div>
         </section>
 
