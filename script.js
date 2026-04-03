@@ -25,6 +25,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const expenseTable = document.getElementById('expense-table');
     const totalAmountDisplay = document.getElementById('total-amount');
     const currencySelect = document.getElementById('currency-select');
+    const dateInput = document.getElementById('date');
+
+    /**
+     * Sets the maximum selectable date to today's date.
+     * This prevents users from adding future expenses.
+     */
+    const setMaxDate = () => {
+        const today = new Date().toISOString().split('T')[0];
+        if (dateInput) {
+            dateInput.max = today;
+        }
+    };
 
     /**
      * Loads expenses from localStorage on application start.
@@ -134,8 +146,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const dateValue = document.getElementById('date').value;
         const noteValue = document.getElementById('note').value;
 
+        // Basic validation
         if (!amountValue || !categoryValue || !dateValue) {
             alert("Please fill in all required fields.");
+            return;
+        }
+
+        // Future date validation check
+        const today = new Date().toISOString().split('T')[0];
+        if (dateValue > today) {
+            alert("Error: Expense date cannot be in the future.");
             return;
         }
 
@@ -164,6 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     // Initialization
+    setMaxDate();
     loadFromLocalStorage();
     renderExpenses();
 
