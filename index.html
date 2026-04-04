@@ -2,40 +2,86 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI-Assisted Expense Tracker | Smart Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fintech AI Expense Tracker</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <!-- Chart.js for Analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Main Application Container -->
     <div id="app" class="container">
-        <header class="dashboard-header">
-            <div class="header-content">
-                <h1>Financial Assistant</h1>
-                <p class="subtitle">Intelligent insights for your spending.</p>
-            </div>
-            <div class="header-actions">
-                <button id="settings-btn" class="icon-btn" title="AI Settings">⚙️</button>
-            </div>
+        <!-- --- HEADER SECTION --- -->
+        <header class="top-header">
+            <span class="pill-label">AI Assisted Expense Tracker</span>
+            <p class="total-expense-label">Total Expenses</p>
+            <h1 id="total-amount" class="total-amount">₹0</h1>
+            
+            <button id="theme-toggle" class="theme-toggle-btn" title="Toggle Theme">
+                <span id="theme-icon">🌙</span>
+            </button>
         </header>
 
         <div class="dashboard-grid">
-            <!-- Left Column: Entry & Budget -->
-            <div class="dashboard-sidebar">
-                <section id="expense-form-section" class="app-section">
-                    <h2>Track New Expense</h2>
+            <!-- Left Column: Status & Budget -->
+            <div class="grid-column status-column">
+                <!-- ALERT CARD -->
+                <div class="card gradient-card alert-card">
+                    <div class="card-icon-label">
+                        <span>⚡</span>
+                        <span>Alerts</span>
+                    </div>
+                    <h2 class="card-title">Action Required</h2>
+                    <button class="action-btn">Take Action</button>
+                </div>
+
+                <!-- BUDGET STATUS CARD -->
+                <div class="card gradient-card budget-card">
+                    <div class="budget-info">
+                        <div class="card-icon-label">
+                            <span>📊</span>
+                            <span>Budget Status</span>
+                        </div>
+                        <h2 class="card-title">Monthly Budget</h2>
+                        <p class="card-subtitle">Tracking nicely</p>
+                    </div>
+                    <div class="circular-indicator">
+                        <svg>
+                            <circle class="circle-bg" cx="40" cy="40" r="36"></circle>
+                            <circle id="circle-progress" class="circle-progress" cx="40" cy="40" r="36"></circle>
+                        </svg>
+                        <div id="circle-percentage" class="circle-percentage">0%</div>
+                    </div>
+                </div>
+
+                <!-- MONTHLY BUDGET INPUT -->
+                <section class="card">
+                    <h3 class="section-title">Monthly Budget</h3>
+                    <div class="form-group">
+                        <input type="number" id="monthly-budget" placeholder="Enter budget (₹)">
+                    </div>
+                    <div class="progress-container">
+                        <div id="budget-progress" class="progress-fill"></div>
+                    </div>
+                    <p id="budget-message" class="budget-text">0% usage</p>
+                </section>
+            </div>
+
+            <!-- Middle Column: Entry Form -->
+            <div class="grid-column form-column">
+                <section class="card h-full">
+                    <h3 class="section-title">Add New Expense</h3>
                     <form id="expense-form">
                         <div class="form-group">
-                            <label for="amount">Amount</label>
+                            <label for="amount">Amount (₹)</label>
                             <input type="number" id="amount" step="0.01" placeholder="0.00" required>
                         </div>
 
                         <div class="form-group">
                             <label for="category">Category</label>
                             <select id="category" required>
-                                <option value="" disabled selected>Select a category</option>
+                                <option value="Other" selected>Other</option>
                                 <option value="Food & Drink">Food & Drink</option>
                                 <option value="Transport">Transport</option>
                                 <option value="Housing">Housing</option>
@@ -43,91 +89,66 @@
                                 <option value="Entertainment">Entertainment</option>
                                 <option value="Shopping">Shopping</option>
                                 <option value="Education">Education</option>
-                                <option value="Other">Other</option>
                             </select>
                         </div>
 
                         <div class="form-group">
-                            <label for="date">Date*</label>
+                            <label for="date">Date</label>
                             <input type="date" id="date" required>
                         </div>
 
                         <div class="form-group">
                             <label for="note">Note (Optional)</label>
-                            <textarea id="note" placeholder="What was this for?"></textarea>
+                            <input type="text" id="note" placeholder="e.g. Lunch">
                         </div>
 
-                        <button type="submit" class="submit-btn highlight-btn">Add Expense</button>
+                        <!-- SPLIT EXPENSE OPTION -->
+                        <div class="split-card">
+                            <div class="split-info">
+                                <div class="split-icon">👥</div>
+                                <div class="split-text">
+                                    <h4>Split Expense</h4>
+                                    <p>Share this cost with friends</p>
+                                </div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" id="split-toggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+
+                        <button type="submit" class="save-btn">Save Transaction</button>
                     </form>
-                </section>
-
-                <section id="budget-section" class="app-section">
-                    <h2>Monthly Budget</h2>
-                    <div class="budget-controls">
-                        <div class="form-group">
-                            <label for="monthly-budget">Set Budget</label>
-                            <input type="number" id="monthly-budget" placeholder="Enter budget (e.g., 5000)">
-                        </div>
-                    </div>
-                    <div class="budget-status">
-                        <div class="progress-container">
-                            <div id="budget-progress" class="progress-bar"></div>
-                        </div>
-                        <p id="budget-message" class="budget-text">Set a budget to track progress.</p>
-                    </div>
                 </section>
             </div>
 
-            <!-- Right Column: Analytics & AI Insights -->
-            <div class="dashboard-main">
-                <section id="summary-section" class="app-section">
-                    <div class="summary-header">
-                        <h2>Quick Summary</h2>
-                        <div class="currency-selector">
-                            <select id="currency-select">
-                                <option value="INR" selected>INR (₹)</option>
-                                <option value="USD">USD ($)</option>
-                                <option value="EUR">EUR (€)</option>
-                                <option value="GBP">GBP (£)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="summary-card">
-                        <p>Total Spent (Filtered)</p>
-                        <h3 id="total-amount">₹0.00</h3>
-                    </div>
+            <!-- Right Column: AI & Analytics -->
+            <div class="grid-column ai-column">
+                <!-- AI INSIGHTS CARD -->
+                <section class="card ai-card">
+                    <h3 class="section-title">AI Spending Insights</h3>
+                    <p class="ai-desc">AI analyzes spending patterns and gives actionable insights.</p>
+                    <div id="ai-content"></div>
+                    <button id="refresh-ai" class="get-ai-btn">Get AI Insights</button>
                 </section>
 
-                <section id="analytics-section" class="app-section">
-                    <h2>Spending Analysis</h2>
-                    <div class="chart-container">
+                <!-- SPENDING BREAKDOWN -->
+                <section class="card">
+                    <h3 class="section-title">Spending Breakdown</h3>
+                    <div class="chart-wrapper">
                         <canvas id="expense-chart"></canvas>
-                    </div>
-                </section>
-
-                <section id="ai-insights-section" class="app-section ai-card">
-                    <div class="ai-header">
-                        <h2>AI Smart Insights</h2>
-                        <button id="refresh-ai" class="icon-btn" title="Refresh AI Analysis">🔄</button>
-                    </div>
-                    <div id="ai-content" class="ai-body">
-                        <p class="placeholder-text">Add your Groq API Key in settings to enable smarter spending insights.</p>
                     </div>
                 </section>
             </div>
         </div>
 
-        <!-- Filters Section -->
-        <section id="filter-section" class="app-section full-width">
-            <div class="filter-header">
-                <h2>Advanced Filters</h2>
-                <button id="clear-filters" class="text-btn">Reset All Filters</button>
-            </div>
-            <div class="filter-controls">
-                <div class="filter-group">
-                    <label for="filter-category">Category</label>
-                    <select id="filter-category">
+        <!-- --- RECENT TRANSACTIONS --- -->
+        <section class="card full-width">
+            <h3 class="section-title">Recent Transactions</h3>
+            
+            <div class="transaction-controls">
+                <div class="control-row">
+                    <select id="filter-category" class="filter-select">
                         <option value="All">All Categories</option>
                         <option value="Food & Drink">Food & Drink</option>
                         <option value="Transport">Transport</option>
@@ -138,67 +159,53 @@
                         <option value="Education">Education</option>
                         <option value="Other">Other</option>
                     </select>
+                    
+                    <div class="date-inputs">
+                        <input type="date" id="filter-from" title="From Date">
+                        <input type="date" id="filter-to" title="To Date">
+                    </div>
                 </div>
-                <div class="filter-group">
-                    <label for="filter-from">From</label>
-                    <input type="date" id="filter-from">
-                </div>
-                <div class="filter-group">
-                    <label for="filter-to">To</label>
-                    <input type="date" id="filter-to">
-                </div>
+                
+                <button id="download-csv" class="export-btn">📤 Export CSV</button>
             </div>
-        </section>
 
-        <!-- Expense List Section -->
-        <section id="expense-list-section" class="app-section full-width">
-            <div class="section-header">
-                <h2>Transaction History</h2>
-                <button id="download-csv" class="btn secondary-btn">📥 Download CSV</button>
-            </div>
-            <div class="table-container">
-                <table id="expense-table" class="responsive-table">
+            <div id="expense-list-container">
+                <table id="expense-table" class="transaction-table">
                     <thead>
                         <tr>
-                            <th>Date</th>
-                            <th>Category</th>
                             <th>Amount</th>
-                            <th>Note</th>
-                            <th>Actions</th>
+                            <th>Category</th>
+                            <th>Date</th>
                         </tr>
                     </thead>
-                    <tbody id="expense-list">
-                        <!-- Dynamic items injected here -->
-                    </tbody>
+                    <tbody id="expense-list"></tbody>
                 </table>
-            </div>
-            <div id="empty-state" class="hidden">
-                <p class="placeholder-text">No transactions match your filters.</p>
+                <div id="empty-state" class="hidden">
+                    <p class="placeholder-text">No transactions found.</p>
+                </div>
             </div>
         </section>
 
         <footer>
-            <p>&copy; 2026 Financial Assistant | Privacy & Security First</p>
+            <p style="text-align: center; color: var(--text-muted); font-size: 0.75rem; padding: 20px 0;">
+                © 2026 AI Expense Tracker | Fully Responsive Dashboard
+            </p>
         </footer>
     </div>
 
-    <!-- Edit Expense Modal -->
+    <!-- Edit Expense Modal (Bottom Sheet Style) -->
     <div id="edit-modal" class="modal hidden">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3>Edit Transaction</h3>
-                <span class="close-modal">&times;</span>
-            </div>
+            <h3 class="section-title">Edit Transaction</h3>
             <form id="edit-form">
                 <input type="hidden" id="edit-id">
                 <div class="form-group">
-                    <label for="edit-amount">Amount</label>
+                    <label for="edit-amount">Amount (₹)</label>
                     <input type="number" id="edit-amount" step="0.01" required>
                 </div>
-                <!-- Other fields added via JS or cloned if needed -->
                 <div class="form-group">
                     <label for="edit-category">Category</label>
-                    <select id="edit-category" id="edit-category" required>
+                    <select id="edit-category">
                         <option value="Food & Drink">Food & Drink</option>
                         <option value="Transport">Transport</option>
                         <option value="Housing">Housing</option>
@@ -213,40 +220,14 @@
                     <label for="edit-date">Date</label>
                     <input type="date" id="edit-date" required>
                 </div>
-                <div class="form-group">
-                    <label for="edit-note">Note</label>
-                    <textarea id="edit-note"></textarea>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="cancel-btn close-modal">Cancel</button>
-                    <button type="submit" class="save-btn highlight-btn">Save Changes</button>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" class="export-btn close-modal" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="save-btn" style="flex: 2; padding: 12px;">Update</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal" class="modal hidden">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>AI Assistant Settings</h3>
-                <span class="close-modal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label for="groq-api-key">Groq API Key</label>
-                    <input type="password" id="groq-api-key" placeholder="gsk_...">
-                    <small>Get your key at <a href="https://console.groq.com/keys" target="_blank">Groq Console</a>. Key is stored locally in your browser.</small>
-                </div>
-            </div>
-            <div class="modal-actions">
-                <button id="clear-api-key" class="btn delete-btn">Clear Key</button>
-                <button id="save-settings" class="btn highlight-btn">Save Settings</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Application Script -->
     <script src="script.js"></script>
 </body>
 </html>
