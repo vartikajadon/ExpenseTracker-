@@ -1,6 +1,6 @@
 /**
-    AI-Assisted Expense Tracker | Mobile-First Logic
-    Updates for Circular Progress, Theme Toggle, and New UI Components
+    AI-Assisted Expense Tracker | Glassmorphism Overhaul
+    Premium UI, CRUD logic, Doughnut Charts, and Currency Selector.
 */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let expenses = [];
     let budget = 0;
     let isDarkMode = false;
+    let selectedCurrency = '₹';
     let expenseChart = null;
     let filters = { from: '', to: '', category: 'All' };
 
@@ -15,11 +16,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalAmountDisplay = document.getElementById('total-amount');
     const themeToggleBtn = document.getElementById('theme-toggle');
     const themeIcon = document.getElementById('theme-icon');
+    const currencySelector = document.getElementById('currency-selector');
     
     // Form
     const expenseForm = document.getElementById('expense-form');
-    const splitToggle = document.getElementById('split-toggle');
     const dateInput = document.getElementById('date');
+    const amountLabel = document.getElementById('amount-label');
     
     // Budget & Progress
     const budgetInput = document.getElementById('monthly-budget');
@@ -41,11 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Modal
     const editModal = document.getElementById('edit-modal');
+    const editForm = document.getElementById('edit-form');
+    const editAmountLabel = document.getElementById('edit-amount-label');
     const closeModalBtns = document.querySelectorAll('.close-modal');
 
     // --- Configuration ---
     const categories = ["Food & Drink", "Transport", "Housing", "Health", "Entertainment", "Shopping", "Education", "Other"];
-    const categoryColors = ['#4f46e5', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'];
+    const categoryColors = [
+        '#6366f1', '#10b981', '#f59e0b', '#ef4444', 
+        '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'
+    ];
 
     const init = () => {
         setMaxDate(dateInput);
@@ -53,11 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
         setMaxDate(filterTo);
         loadState();
         initChart();
-        render();
         applyTheme();
+        updateLabels();
+        render();
     };
 
     const setMaxDate = (el) => { if (el) el.max = new Date().toISOString().split('T')[0]; };
+
+    const updateLabels = () => {
+        if (amountLabel) amountLabel.textContent = `Amount (${selectedCurrency})`;
+        if (editAmountLabel) editAmountLabel.textContent = `Amount (${selectedCurrency})`;
+    };
 
     // --- Theme Management ---
     const applyTheme = () => {
@@ -76,12 +89,23 @@ document.addEventListener('DOMContentLoaded', () => {
         applyTheme();
     });
 
+    // --- Currency Handle ---
+    currencySelector.addEventListener('change', (e) => {
+        selectedCurrency = e.target.value;
+        localStorage.setItem('selectedCurrency', selectedCurrency);
+        updateLabels();
+        render();
+    });
+
     // --- Persistence ---
     const loadState = () => {
         expenses = JSON.parse(localStorage.getItem('expenses')) || [];
         budget = parseFloat(localStorage.getItem('budget')) || 0;
         isDarkMode = localStorage.getItem('darkMode') === 'true';
+        selectedCurrency = localStorage.getItem('selectedCurrency') || '₹';
+        
         if (budgetInput) budgetInput.value = budget > 0 ? budget : '';
+        if (currencySelector) currencySelector.value = selectedCurrency;
     };
 
     const saveState = () => {
@@ -93,23 +117,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const initChart = () => {
         const ctx = document.getElementById('expense-chart').getContext('2d');
         expenseChart = new Chart(ctx, {
-            type: 'bar',
+            type: 'doughnut',
             data: {
-                labels: categories.map(c => c.split(' ')[0]), // Short labels for mobile
+                labels: categories,
                 datasets: [{ 
                     data: categories.map(() => 0), 
                     backgroundColor: categoryColors,
-                    borderRadius: 8,
-                    maxBarThickness: 30
+                    borderWidth: 0,
+                    hoverOffset: 15
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } },
-                scales: { 
-                    y: { beginAtZero: true, grid: { display: false }, ticks: { display: false } },
-                    x: { grid: { display: false }, ticks: { font: { size: 10, weight: 'bold' } } }
+                cutout: '70%',
+                plugins: { 
+                    legend: { 
+                        position: 'bottom',
+                        labels: { color: '#94a3b8', font: { size: 10, weight: 'bold' } }
+                    }
                 }
             }
         });
@@ -124,13 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Financial Calculations ---
     const updateProgressIndicators = (total) => {
-        // Linear Progress Bar
         const percent = budget > 0 ? Math.min((total / budget) * 100, 100) : 0;
         budgetProgressFill.style.width = `${percent}%`;
         budgetProgressFill.className = `progress-fill ${percent >= 100 ? 'progress-red' : 'progress-green'}`;
         budgetMessage.textContent = `${Math.round(percent)}% usage`;
 
-        // Circular Indicator
         const radius = 36;
         const circumference = 2 * Math.PI * radius;
         const offset = circumference - (percent / 100) * circumference;
@@ -146,31 +170,73 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const total = filtered.reduce((s, e) => s + e.amount, 0);
-        totalAmountDisplay.textContent = `₹${total.toLocaleString()}`;
+        totalAmountDisplay.textContent = `${selectedCurrency}${total.toLocaleString()}`;
         
         updateProgressIndicators(total);
         updateChart(filtered);
 
         expenseListContainer.innerHTML = '';
-        const recent = filtered.slice(-5).reverse(); // Show last 5 on mobile
+        const recent = filtered.slice(-10).reverse();
 
         recent.forEach(exp => {
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td class="amount-td">₹${exp.amount}</td>
-                <td><span class="category-td-badge">${exp.category}</span></td>
+                <td class="amount-td">${selectedCurrency}${exp.amount}</td>
+                <td><span class="category-td-badge" style="background: ${categoryColors[categories.indexOf(exp.category)]}20; color: ${categoryColors[categories.indexOf(exp.category)]}; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">${exp.category}</span></td>
                 <td style="font-size: 0.75rem; color: var(--text-muted)">${exp.date.split('-').reverse().join('/')}</td>
+                <td style="text-align: right;">
+                    <div class="action-btns">
+                        <button class="edit-btn" onclick="window.openEditModal('${exp.id}')">✏️</button>
+                        <button class="delete-btn" onclick="window.deleteExpense('${exp.id}')">🗑️</button>
+                    </div>
+                </td>
             `;
             expenseListContainer.appendChild(row);
         });
 
         const emptyState = document.getElementById('empty-state');
-        if (recent.length === 0) {
-            emptyState.classList.remove('hidden');
-        } else {
-            emptyState.classList.add('hidden');
+        if (recent.length === 0) emptyState.classList.remove('hidden');
+        else emptyState.classList.add('hidden');
+    };
+
+    // --- CRUD Operations ---
+    window.deleteExpense = (id) => {
+        if (confirm('Are you sure you want to delete this transaction?')) {
+            expenses = expenses.filter(e => e.id !== id);
+            saveState();
+            render();
         }
     };
+
+    window.openEditModal = (id) => {
+        const exp = expenses.find(e => e.id === id);
+        if (!exp) return;
+        
+        document.getElementById('edit-id').value = exp.id;
+        document.getElementById('edit-amount').value = exp.amount;
+        document.getElementById('edit-category').value = exp.category;
+        document.getElementById('edit-date').value = exp.date;
+        
+        editModal.classList.remove('hidden');
+    };
+
+    closeModalBtns.forEach(btn => btn.addEventListener('click', () => editModal.classList.add('hidden')));
+
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('edit-id').value;
+        const amount = parseFloat(document.getElementById('edit-amount').value);
+        const category = document.getElementById('edit-category').value;
+        const date = document.getElementById('edit-date').value;
+
+        const index = expenses.findIndex(exp => exp.id === id);
+        if (index !== -1) {
+            expenses[index] = { ...expenses[index], amount, category, date };
+            saveState();
+            render();
+            editModal.classList.add('hidden');
+        }
+    });
 
     // --- AI Insights ---
     const fetchAIInsights = async () => {
@@ -235,7 +301,6 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState();
         render();
         expenseForm.reset();
-        // Feedback
         const saveBtn = document.querySelector('.save-btn');
         saveBtn.textContent = '✅ Saved!';
         setTimeout(() => saveBtn.textContent = 'Save Transaction', 2000);
@@ -249,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     refreshAIBtn.addEventListener('click', fetchAIInsights);
 
-    // Filters
     const updateFilters = () => {
         filters.from = filterFrom.value;
         filters.to = filterTo.value;

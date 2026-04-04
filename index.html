@@ -26,15 +26,6 @@
         <div class="dashboard-grid">
             <!-- Left Column: Status & Budget -->
             <div class="grid-column status-column">
-                <!-- ALERT CARD -->
-                <div class="card gradient-card alert-card">
-                    <div class="card-icon-label">
-                        <span>⚡</span>
-                        <span>Alerts</span>
-                    </div>
-                    <h2 class="card-title">Action Required</h2>
-                    <button class="action-btn">Take Action</button>
-                </div>
 
                 <!-- BUDGET STATUS CARD -->
                 <div class="card gradient-card budget-card">
@@ -59,7 +50,18 @@
                 <section class="card">
                     <h3 class="section-title">Monthly Budget</h3>
                     <div class="form-group">
-                        <input type="number" id="monthly-budget" placeholder="Enter budget (₹)">
+                        <input type="number" id="monthly-budget" placeholder="Enter budget">
+                    </div>
+                    <!-- CURRENCY SELECTOR -->
+                    <div class="form-group" style="margin-top: 12px;">
+                        <label for="currency-selector">Display Currency</label>
+                        <select id="currency-selector">
+                            <option value="₹">₹ INR</option>
+                            <option value="$">$ USD</option>
+                            <option value="€">€ EUR</option>
+                            <option value="£">£ GBP</option>
+                            <option value="¥">¥ JPY</option>
+                        </select>
                     </div>
                     <div class="progress-container">
                         <div id="budget-progress" class="progress-fill"></div>
@@ -74,9 +76,9 @@
                     <h3 class="section-title">Add New Expense</h3>
                     <form id="expense-form">
                         <div class="form-group">
-                            <label for="amount">Amount (₹)</label>
-                            <input type="number" id="amount" step="0.01" placeholder="0.00" required>
-                        </div>
+                            <label for="amount" id="amount-label">Amount</label>
+                        <input type="number" id="amount" step="0.01" placeholder="0.00" required>
+                    </div>
 
                         <div class="form-group">
                             <label for="category">Category</label>
@@ -100,21 +102,6 @@
                         <div class="form-group">
                             <label for="note">Note (Optional)</label>
                             <input type="text" id="note" placeholder="e.g. Lunch">
-                        </div>
-
-                        <!-- SPLIT EXPENSE OPTION -->
-                        <div class="split-card">
-                            <div class="split-info">
-                                <div class="split-icon">👥</div>
-                                <div class="split-text">
-                                    <h4>Split Expense</h4>
-                                    <p>Share this cost with friends</p>
-                                </div>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" id="split-toggle">
-                                <span class="slider"></span>
-                            </label>
                         </div>
 
                         <button type="submit" class="save-btn">Save Transaction</button>
@@ -176,6 +163,7 @@
                             <th>Amount</th>
                             <th>Category</th>
                             <th>Date</th>
+                            <th style="text-align: right;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="expense-list"></tbody>
@@ -199,8 +187,8 @@
             <h3 class="section-title">Edit Transaction</h3>
             <form id="edit-form">
                 <input type="hidden" id="edit-id">
-                <div class="form-group">
-                    <label for="edit-amount">Amount (₹)</label>
+                <div style="margin-top: 10px;">
+                    <label for="edit-amount" id="edit-amount-label">Amount</label>
                     <input type="number" id="edit-amount" step="0.01" required>
                 </div>
                 <div class="form-group">
