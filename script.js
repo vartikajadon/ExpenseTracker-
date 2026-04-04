@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }).filter(x => x).join(', ');
 
         try {
-            const response = await fetch('http://localhost:5000/api/insights', {
+            const response = await fetch('/api/insights', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

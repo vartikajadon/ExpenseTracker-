@@ -68,3 +68,5 @@ app.listen(PORT, () => {
     console.log(`Secure AI Backend is running on http://localhost:${PORT}`);
     console.log('Ensure your GROQ_API_KEY is correctly set in the .env file.');
 });
+// Export the server for Vercel
+module.exports = app;
