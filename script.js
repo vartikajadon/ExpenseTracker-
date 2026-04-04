@@ -50,8 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Configuration ---
     const categories = ["Food & Drink", "Transport", "Housing", "Health", "Entertainment", "Shopping", "Education", "Other"];
     const categoryColors = [
-        '#6366f1', '#10b981', '#f59e0b', '#ef4444', 
-        '#8b5cf6', '#ec4899', '#06b6d4', '#64748b'
+        '#60A5FA', '#34D399', '#FBBF24', '#F472B6', 
+        '#A78BFA', '#fb923c', '#2dd4bf', '#94a3b8'
     ];
 
     const init = () => {

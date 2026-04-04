@@ -156,7 +156,7 @@
                 <button id="download-csv" class="export-btn">📤 Export CSV</button>
             </div>
 
-            <div id="expense-list-container">
+            <div id="expense-list-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                 <table id="expense-table" class="transaction-table">
                     <thead>
                         <tr>
@@ -168,9 +168,9 @@
                     </thead>
                     <tbody id="expense-list"></tbody>
                 </table>
-                <div id="empty-state" class="hidden">
-                    <p class="placeholder-text">No transactions found.</p>
-                </div>
+            </div>
+            <div id="empty-state" class="hidden">
+                <p class="placeholder-text" style="text-align: center; padding: 40px; color: var(--text-muted);">No transactions found.</p>
             </div>
         </section>
 
