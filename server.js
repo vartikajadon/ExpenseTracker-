@@ -12,7 +12,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors()); // Allow frontend to communicate with backend
 app.use(express.json()); // Parse JSON request bodies
-app.use(express.static(__dirname)); // Serve frontend files (HTML, JS, CSS) from current directory
+app.use(express.static('.')); // Serve static files (index.html, etc.) from this directory
 
 /**
  * API Endpoint: /api/insights
@@ -22,21 +22,19 @@ app.post('/api/insights', async (req, res) => {
     try {
         const { summary, total, budget, categories } = req.body;
 
-        // Structured prompt to guide AI into exact categorized output
-        const prompt = `Analyze this spending data and provide EXACTLY 3 short, one-line bullet points.
-        
-        Format Requirements:
-        - Line 1 MUST start with "High Alert:" followed by the category with the highest spending.
-        - Line 2 MUST start with "Tip:" followed by one practical, short saving tip.
-        - Line 3 MUST start with "Warning:" followed by a status update (only if budget is set). If under budget, say "You are safely within your budget." If over/near, warn about the limit.
-
+        // Structured prompt to guide AI
+        const prompt = `Analyze this spending data and provide 3-4 short, actionable financial insights in simple bullet points. 
         Summary Data:
         - Total Spent: ${total}
         - Monthly Budget: ${budget}
         - Spending Breakdown: ${summary}
         - Top Categories: ${categories.join(', ')}
 
-        Keep each point to one simple sentence. No extra text. No bolding.`;
+        Guidelines:
+        - Max 3-4 insights.
+        - One-line bullet points.
+        - Simple English for a beginner user.
+        - Be encouraging but clear about overspending.`;
 
         // POST request to Groq API using the secure key from .env
         const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
@@ -68,5 +66,3 @@ app.listen(PORT, () => {
     console.log(`Secure AI Backend is running on http://localhost:${PORT}`);
     console.log('Ensure your GROQ_API_KEY is correctly set in the .env file.');
 });
-// Export the server for Vercel
-module.exports = app;

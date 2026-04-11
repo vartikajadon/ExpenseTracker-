@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Documentation | AI Expense Tracker</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #6366f1, #a855f7);
+            --bg-mesh: fixed radial-gradient(at 0% 0%, hsla(253,16%,7%,1) 0, transparent 50%), 
+                       fixed radial-gradient(at 50% 0%, hsla(225,39%,30%,1) 0, transparent 50%), 
+                       fixed radial-gradient(at 100% 0%, hsla(339,49%,30%,1) 0, transparent 50%);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #a855f7;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-mesh);
+            background-color: #0f172a;
+            color: var(--text-main);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: clamp(20px, 5vw, 60px);
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .pill-label {
+            background: var(--primary-gradient);
+            padding: 6px 16px;
+            border-radius: 100px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            font-weight: 900;
+            letter-spacing: -2px;
+            margin-bottom: 10px;
+            background: linear-gradient(to bottom, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: var(--glass-shadow);
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-bottom: 24px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        p, li {
+            font-size: 1rem;
+            color: #cbd5e1;
+            margin-bottom: 16px;
+        }
+
+        ul { list-style-position: inside; }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .tech-item {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            padding: 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 6px;
+            border-radius: 6px;
+            color: #a855f7;
+            font-family: monospace;
+        }
+
+        .interview-q {
+            background: rgba(168, 85, 247, 0.1);
+            border-left: 4px solid var(--accent-color);
+            padding: 20px;
+            border-radius: 0 16px 16px 0;
+            margin-bottom: 20px;
+        }
+
+        .interview-q h4 {
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .resource-link {
+            display: inline-block;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 700;
+            margin-top: 10px;
+            transition: opacity 0.2s;
+        }
+
+        .resource-link:hover { opacity: 0.8; }
+
+        .back-btn {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 100px;
+            font-weight: 700;
+            backdrop-filter: blur(10px);
+            transition: all 0.2s;
+            z-index: 100;
+        }
+
+        .back-btn:hover { background: var(--accent-color); border-color: transparent; }
+
+        @media (max-width: 600px) {
+            body { padding: 20px; }
+            .back-btn { position: relative; top: 0; left: 0; display: block; width: fit-content; margin: 0 auto 40px; }
+            .card { padding: 24px; }
+        }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-btn">← Back to App</a>
+
+    <div class="container">
+        <header>
+            <span class="pill-label">Project Blueprint</span>
+            <h1>Technical Documentation</h1>
+            <p class="subtitle">AI-Powered Fintech Expense Tracker</p>
+        </header>
+
+        <!-- OVERVIEW -->
+        <section class="card">
+            <h2>🚀 Project Overview</h2>
+            <p>The AI-Powered Fintech Expense Tracker is a full-stack web application designed to help users track their spending, manage budgets, and receive intelligent financial advice using Generative AI. It features a premium "Glassmorphism" UI, dynamic data visualization, and a secure backend proxy to protect sensitive data.</p>
+        </section>
+
+        <!-- TECH STACK -->
+        <section class="card">
+            <h2>🛠 Technology Stack</h2>
+            
+            <h3>Frontend (The User Interface)</h3>
+            <div class="tech-grid">
+                <div class="tech-item">HTML5 Semantic Elements</div>
+                <div class="tech-item">CSS3 Glassmorphism</div>
+                <div class="tech-item">Vanilla JavaScript (ES6+)</div>
+                <div class="tech-item">Chart.js Visualization</div>
+            </div>
+
+            <h3>Backend & API</h3>
+            <div class="tech-grid">
+                <div class="tech-item">Node.js Runtime</div>
+                <div class="tech-item">Express.js Framework</div>
+                <div class="tech-item">Groq AI (Llama 3.3)</div>
+                <div class="tech-item">Dotenv (Security)</div>
+            </div>
+        </section>
+
+        <!-- CONCEPTS -->
+        <section class="card">
+            <h2>🏗 Core Architecture</h2>
+            <h3>1. Glassmorphism Design System</h3>
+            <p>Characterized by translucent "frosted glass" elements. Implemented via <code>background: rgba()</code> for transparency and <code>backdrop-filter: blur(14px)</code> for the frosted effect. It creates a modern, premium aesthetic.</p>
+
+            <h3>2. Secure Proxy Pattern</h3>
+            <p>Crucial for fintech security. We never call the AI API directly from the frontend; instead, our Node.js server acts as a middleman, keeping the <code>GROQ_API_KEY</code> safely hidden in server environment variables.</p>
+
+            <h3>3. State & Persistence</h3>
+            <p>Leverages <code>window.localStorage</code> for client-side data persistence, ensuring user transactions survive page refreshes without needing a costly cloud database.</p>
+        </section>
+
+        <!-- INTERVIEW PREP -->
+        <section class="card">
+            <h2>🎓 Interview Preparation</h2>
+            
+            <div class="interview-q">
+                <h4>Q: Why did you use a Proxy server for the AI insights?</h4>
+                <p>Security. If I call Groq directly from the frontend, my API key would be visible in the "Network" tab of the browser console. Using an Express proxy keeps the key safe on the server.</p>
+            </div>
+
+            <div class="interview-q">
+                <h4>Q: How did you implement responsiveness for both phones and laptops?</h4>
+                <p>I used a hybrid approach. CSS Grid for the modular components that stack into a single column on mobile, and <code>clamp()</code> functions for fluid typography that scales naturally with screen size.</p>
+            </div>
+
+            <div class="interview-q">
+                <h4>Q: Explain the Glassmorphism implementation.</h4>
+                <p>It relies on three layers: a translucent color, a high-blur filter, and a thin, high-contrast border to define the shape against the colorful background mesh.</p>
+            </div>
+        </section>
+
+        <!-- RESOURCES -->
+        <section class="card">
+            <h2>🔗 External Resources</h2>
+            <p>Deepen your understanding of the concepts used in this project:</p>
+            <ul>
+                <li><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" class="resource-link" target="_blank">MDN Web Docs (JavaScript Basics)</a></li>
+                <li><a href="https://www.chartjs.org/docs/latest/" class="resource-link" target="_blank">Chart.js Documentation</a></li>
+                <li><a href="https://console.groq.com/docs/quickstart" class="resource-link" target="_blank">Groq API Reference</a></li>
+                <li><a href="https://css-tricks.com/almanac/properties/b/backdrop-filter/" class="resource-link" target="_blank">CSS-Tricks: Backdrop Filter Guide</a></li>
+            </ul>
+        </section>
+
+    </div>
+
+</body>
+</html>

@@ -27,24 +27,15 @@
             <!-- Left Column: Status & Budget -->
             <div class="grid-column status-column">
 
-                <!-- BUDGET STATUS CARD -->
-                <div class="card gradient-card budget-card">
-                    <div class="budget-info">
-                        <div class="card-icon-label">
-                            <span>📊</span>
-                            <span>Budget Status</span>
-                        </div>
-                        <h2 class="card-title">Monthly Budget</h2>
-                        <p class="card-subtitle">Tracking nicely</p>
+                <!-- MONTHLY INCOME CARD -->
+                <section class="card">
+                    <h3 class="section-title">Monthly Income</h3>
+                    <div class="form-group">
+                        <label for="monthly-income">Income Amount</label>
+                        <input type="number" id="monthly-income" placeholder="Enter monthly income">
                     </div>
-                    <div class="circular-indicator">
-                        <svg>
-                            <circle class="circle-bg" cx="40" cy="40" r="36"></circle>
-                            <circle id="circle-progress" class="circle-progress" cx="40" cy="40" r="36"></circle>
-                        </svg>
-                        <div id="circle-percentage" class="circle-percentage">0%</div>
-                    </div>
-                </div>
+                    <p id="savings-message" class="budget-text">Savings: ₹0</p>
+                </section>
 
                 <!-- MONTHLY BUDGET INPUT -->
                 <section class="card">
@@ -52,7 +43,7 @@
                     <div class="form-group">
                         <input type="number" id="monthly-budget" placeholder="Enter budget">
                     </div>
-                    <!-- CURRENCY SELECTOR -->
+                    <!-- CURRENCY SELECTOR (GLOBAL) -->
                     <div class="form-group" style="margin-top: 12px;">
                         <label for="currency-selector">Display Currency</label>
                         <select id="currency-selector">
@@ -68,6 +59,26 @@
                     </div>
                     <p id="budget-message" class="budget-text">0% usage</p>
                 </section>
+
+                <!-- BUDGET STATUS CARD (USAGE TRACKER) -->
+                <div class="card gradient-card budget-card">
+                    <div class="budget-info">
+                        <div class="card-icon-label">
+                            <span>📊</span>
+                            <span>Budget Status</span>
+                        </div>
+                        <h2 class="card-title">Budget Usage</h2>
+                        <p class="card-subtitle">Tracking nicely</p>
+                    </div>
+                    <div class="circular-indicator">
+                        <svg>
+                            <circle class="circle-bg" cx="40" cy="40" r="36"></circle>
+                            <circle id="circle-progress" class="circle-progress" cx="40" cy="40" r="36"></circle>
+                        </svg>
+                        <div id="circle-percentage" class="circle-percentage">0%</div>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Middle Column: Entry Form -->
@@ -100,11 +111,16 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="note">Note (Optional)</label>
-                            <input type="text" id="note" placeholder="e.g. Lunch">
+                            <label for="currency">Currency</label>
+                            <select id="expense-currency">
+                                <option value="₹">INR (₹)</option>
+                                <option value="$">USD ($)</option>
+                                <option value="€">EUR (€)</option>
+                                <option value="£">GBP (£)</option>
+                            </select>
                         </div>
 
-                        <button type="submit" class="save-btn">Save Transaction</button>
+                        <button type="submit" class="save-btn">Save Expense</button>
                     </form>
                 </section>
             </div>
@@ -207,6 +223,15 @@
                 <div class="form-group">
                     <label for="edit-date">Date</label>
                     <input type="date" id="edit-date" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-currency">Currency</label>
+                    <select id="edit-currency">
+                        <option value="₹">INR (₹)</option>
+                        <option value="$">USD ($)</option>
+                        <option value="€">EUR (€)</option>
+                        <option value="£">GBP (£)</option>
+                    </select>
                 </div>
                 <div style="display: flex; gap: 12px; margin-top: 24px;">
                     <button type="button" class="export-btn close-modal" style="flex: 1;">Cancel</button>

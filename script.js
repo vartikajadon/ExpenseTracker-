@@ -7,10 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State Management ---
     let expenses = [];
     let budget = 0;
+    let income = 0;
     let isDarkMode = false;
     let selectedCurrency = '₹';
     let expenseChart = null;
     let filters = { from: '', to: '', category: 'All' };
+    let monthlySavingsData = {};
 
     // --- DOM Elements ---
     const totalAmountDisplay = document.getElementById('total-amount');
@@ -25,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Budget & Progress
     const budgetInput = document.getElementById('monthly-budget');
+    const incomeInput = document.getElementById('monthly-income');
+    const savingsMessage = document.getElementById('savings-message');
     const budgetProgressFill = document.getElementById('budget-progress');
     const budgetMessage = document.getElementById('budget-message');
     const circleProgress = document.getElementById('circle-progress');
@@ -101,16 +105,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const loadState = () => {
         expenses = JSON.parse(localStorage.getItem('expenses')) || [];
         budget = parseFloat(localStorage.getItem('budget')) || 0;
+        income = parseFloat(localStorage.getItem('income')) || 0;
         isDarkMode = localStorage.getItem('darkMode') === 'true';
         selectedCurrency = localStorage.getItem('selectedCurrency') || '₹';
+        monthlySavingsData = JSON.parse(localStorage.getItem('monthlySavingsData')) || {};
         
         if (budgetInput) budgetInput.value = budget > 0 ? budget : '';
+        if (incomeInput) incomeInput.value = income > 0 ? income : '';
         if (currencySelector) currencySelector.value = selectedCurrency;
     };
 
     const saveState = () => {
         localStorage.setItem('expenses', JSON.stringify(expenses));
         localStorage.setItem('budget', budget.toString());
+        localStorage.setItem('income', income.toString());
+        localStorage.setItem('monthlySavingsData', JSON.stringify(monthlySavingsData));
     };
 
     // --- Analytics ---
@@ -160,6 +169,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const offset = circumference - (percent / 100) * circumference;
         circleProgress.style.strokeDashoffset = offset;
         circlePercentageLabel.textContent = `${Math.round(percent)}%`;
+
+        // Savings Calculation
+        const savings = income - total;
+        if (savingsMessage) {
+            savingsMessage.textContent = `Savings: ${selectedCurrency}${savings.toLocaleString()}`;
+            savingsMessage.style.color = savings >= 0 ? '#10b981' : '#ef4444';
+        }
+
+        // Store month-wise savings
+        const now = new Date();
+        const monthKey = `${now.toLocaleString('default', { month: 'long' })}-${now.getFullYear()}`;
+        monthlySavingsData[monthKey] = {
+            income: income,
+            expense: total,
+            savings: savings
+        };
+        saveState();
     };
 
     const render = () => {
@@ -180,8 +206,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         recent.forEach(exp => {
             const row = document.createElement('tr');
+            const displayCurrency = exp.currency || selectedCurrency;
             row.innerHTML = `
-                <td class="amount-td">${selectedCurrency}${exp.amount}</td>
+                <td class="amount-td">${displayCurrency}${exp.amount}</td>
                 <td><span class="category-td-badge" style="background: ${categoryColors[categories.indexOf(exp.category)]}20; color: ${categoryColors[categories.indexOf(exp.category)]}; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700;">${exp.category}</span></td>
                 <td style="font-size: 0.75rem; color: var(--text-muted)">${exp.date.split('-').reverse().join('/')}</td>
                 <td style="text-align: right;">
@@ -216,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit-amount').value = exp.amount;
         document.getElementById('edit-category').value = exp.category;
         document.getElementById('edit-date').value = exp.date;
+        document.getElementById('edit-currency').value = exp.currency || selectedCurrency;
         
         editModal.classList.remove('hidden');
     };
@@ -228,10 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const amount = parseFloat(document.getElementById('edit-amount').value);
         const category = document.getElementById('edit-category').value;
         const date = document.getElementById('edit-date').value;
+        const currency = document.getElementById('edit-currency').value;
 
         const index = expenses.findIndex(exp => exp.id === id);
         if (index !== -1) {
-            expenses[index] = { ...expenses[index], amount, category, date };
+            expenses[index] = { ...expenses[index], amount, category, date, currency };
             saveState();
             render();
             editModal.classList.add('hidden');
@@ -296,18 +325,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById('category').value;
         const date = document.getElementById('date').value;
         const note = document.getElementById('note').value;
+        const currency = document.getElementById('expense-currency').value;
         
-        expenses.push({ id: crypto.randomUUID(), amount, category, date, note });
+        expenses.push({ id: crypto.randomUUID(), amount, category, date, note, currency });
         saveState();
         render();
         expenseForm.reset();
         const saveBtn = document.querySelector('.save-btn');
         saveBtn.textContent = '✅ Saved!';
-        setTimeout(() => saveBtn.textContent = 'Save Transaction', 2000);
+        setTimeout(() => saveBtn.textContent = 'Save Expense', 2000);
     });
 
     budgetInput.addEventListener('input', (e) => {
         budget = parseFloat(e.target.value) || 0;
+        saveState();
+        render();
+    });
+
+    incomeInput.addEventListener('input', (e) => {
+        income = parseFloat(e.target.value) || 0;
         saveState();
         render();
     });

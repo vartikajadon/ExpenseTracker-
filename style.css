@@ -125,6 +125,16 @@ body:not(.dark-mode) {
     .form-column { grid-row: span 1; }
 }
 
+.status-column, .ai-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.status-column .card, .ai-column .card {
+    margin-bottom: 20px;
+}
+
 /* --- GLASS CARD SYSTEM --- */
 .card {
     background: var(--glass-bg);
