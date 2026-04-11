@@ -244,6 +244,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('edit-category').value = exp.category;
         document.getElementById('edit-date').value = exp.date;
         document.getElementById('edit-currency').value = exp.currency || selectedCurrency;
+        document.getElementById('edit-note').value = exp.note || '';
         
         editModal.classList.remove('hidden');
     };
@@ -257,10 +258,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const category = document.getElementById('edit-category').value;
         const date = document.getElementById('edit-date').value;
         const currency = document.getElementById('edit-currency').value;
+        const note = document.getElementById('edit-note').value;
 
         const index = expenses.findIndex(exp => exp.id === id);
         if (index !== -1) {
-            expenses[index] = { ...expenses[index], amount, category, date, currency };
+            expenses[index] = { ...expenses[index], amount, category, date, currency, note };
             saveState();
             render();
             editModal.classList.add('hidden');
