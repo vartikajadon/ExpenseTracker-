@@ -54,6 +54,7 @@ body:not(.dark-mode) {
     margin: 0 auto;
     padding: clamp(16px, 4vw, 32px);
     max-width: 1400px;
+    position: relative;
     transition: padding 0.3s ease;
 }
 
@@ -62,6 +63,7 @@ body:not(.dark-mode) {
     text-align: center;
     position: relative;
     margin-bottom: 32px;
+    z-index: 1100; /* Higher than modal (1000) to ensure clicks pass through */
 }
 
 .pill-label {
@@ -88,16 +90,16 @@ body:not(.dark-mode) {
     font-size: clamp(2.5rem, 10vw, 4.5rem);
     font-weight: 950;
     margin: -4px 0 0;
-    background: linear-gradient(to bottom, #fff, #94a3b8);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: #ffffff;
     letter-spacing: -2px;
+    transition: color 0.3s ease;
+}
+
+body:not(.dark-mode) .total-amount {
+    color: #000000;
 }
 
 .theme-toggle-btn {
-    position: absolute;
-    right: 0; top: 0;
     width: 44px; height: 44px;
     border-radius: 50%;
     border: 1px solid var(--glass-border);
@@ -107,6 +109,80 @@ body:not(.dark-mode) {
     display: flex; justify-content: center; align-items: center;
     cursor: pointer;
 }
+
+#guest-actions, #user-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+/* --- FIXED NAV CONTROLS --- */
+.fixed-top-left {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 2000;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.fixed-top-right {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+}
+
+.user-profile-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+.user-avatar {
+    font-size: 1.2rem;
+}
+
+.user-name {
+    font-weight: 800;
+    font-size: 0.9rem;
+    color: var(--text-main);
+}
+
+body:not(.dark-mode) .user-name {
+    color: #1e293b;
+}
+
+@media (max-width: 650px) {
+    .fixed-top-left { top: 10px; left: 10px; gap: 8px; flex-wrap: wrap;}
+    .fixed-top-right { top: 10px; right: 10px; }
+    .user-name { display: none; }
+    .user-profile-display { padding: 8px; }
+    #settings-btn span { display: none; }
+    #logout-btn span { display: none; }
+    .add-btn { padding: 10px 14px; }
+}
+
+.add-btn {
+    padding: 10px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-main);
+    transition: all 0.2s;
+}
+
+.add-btn:hover { transform: scale(1.05); }
 
 /* --- DASHBOARD GRID --- */
 .dashboard-grid {
@@ -173,18 +249,44 @@ body:not(.dark-mode) .card {
 .card-title { font-size: 1.4rem; font-weight: 800; line-height: 1.1; }
 .card-subtitle { font-size: 0.8rem; opacity: 0.8; }
 
-/* --- CIRCULAR PROGRESS --- */
-.circular-indicator { position: relative; width: 70px; height: 70px; }
-.circular-indicator svg { width: 70px; height: 70px; }
-.circular-indicator circle { fill: none; stroke-width: 7; stroke-linecap: round; }
-.circle-bg { stroke: rgba(255,255,255,0.05); }
-.circle-progress {
-    stroke: var(--accent-color); stroke-dasharray: 226.19; stroke-dashoffset: 226.19;
-    transition: stroke-dashoffset 1s ease; transform: rotate(-90deg); transform-origin: center;
+/* --- CSS-BASED BUDGET CIRCLE --- */
+.budget-circle-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
+.budget-circle {
+    width: 100px; /* Adjusted from 120px to fit existing card padding better */
+    height: 100px;
+    border-radius: 50%;
+    background: conic-gradient(
+      var(--accent-color) calc(var(--progress) * 1%),
+      rgba(255, 255, 255, 0.1) 0%
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background 0.6s ease-in-out;
+}
+
+.budget-circle::before {
+    content: "";
+    width: 80px; /* Slightly smaller than circle to create the donut effect */
+    height: 80px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px); /* Glass effect for the center */
+    border-radius: 50%;
+    position: absolute;
+}
+
 .circle-percentage {
-    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    font-weight: 800; font-size: 0.75rem;
+    position: relative;
+    z-index: 2;
+    font-weight: 800;
+    font-size: 1rem;
+    color: #fff;
 }
 
 /* --- FORM STYLES --- */
@@ -222,15 +324,43 @@ input:focus, select:focus { border-color: var(--accent-color); }
 .transaction-controls { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
 
 @media (min-width: 600px) {
-    .transaction-controls { flex-direction: row; justify-content: space-between; align-items: flex-end; }
-    .control-row { display: flex; gap: 12px; }
+    .transaction-controls { flex-direction: row; justify-content: space-between; align-items: center; }
+    .control-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+}
+
+.filter-select, .date-inputs input {
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    height: 38px;
+    width: auto;
+    min-width: 130px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--glass-border);
+    color: var(--text-main);
+    transition: all 0.2s;
+}
+
+body:not(.dark-mode) .filter-select,
+body:not(.dark-mode) .date-inputs input {
+    background: #ffffff;
+    color: #1e293b;
+    border: 1px solid #cbd5e1;
+}
+
+.date-inputs {
+    display: flex;
+    gap: 8px;
+    align-items: center;
 }
 
 .transaction-table { width: 100%; border-collapse: collapse; min-width: 500px; }
 .transaction-table th { text-align: left; padding: 12px; color: var(--text-muted); font-size: 0.7rem; font-weight: 800; text-transform: uppercase; border-bottom: 1px solid var(--glass-border); }
 .transaction-table td { padding: 14px 12px; font-size: 0.9rem; border-bottom: 1px solid var(--glass-border); vertical-align: middle; }
 .amount-td { font-weight: 800; color: var(--text-main); }
+
 body:not(.dark-mode) .amount-td { color: #1e293b; }
+
 
 .action-btns { 
     display: flex; justify-content: flex-end; align-items: center; gap: 12px; 
@@ -269,9 +399,41 @@ body:not(.dark-mode) .ai-card { border-left: 2px solid var(--accent-color); }
 
 .hidden { display: none !important; }
 
+/* --- AUTH STATIC SECTION (Login Overlap Fix) --- */
+.auth-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding-top: 40px;
+    padding-bottom: 60px;
+}
+
+.auth-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid var(--glass-border);
+    width: 100%;
+    max-width: 400px;
+    padding: 32px;
+    border-radius: 32px;
+    box-shadow: var(--glass-shadow);
+    transition: transform 0.3s ease;
+}
+
 /* Mobile optimization */
 @media (max-width: 375px) {
     .container { padding: 16px; }
     .card { padding: 20px; }
     .total-amount { font-size: 2.5rem; }
+    .auth-card { padding: 24px; border-radius: 24px; }
 }
+
+/* --- PROFILE DROPDOWN --- */
+.profile-dropdown-container { position: relative; } 
+.profile-dropdown { position: absolute; top: 100%; right: 0; margin-top: 12px; background: var(--glass-bg); backdrop-filter: blur(12px); border: 1px solid var(--glass-border); border-radius: 12px; box-shadow: var(--glass-shadow); display: flex; flex-direction: column; width: 200px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2500; } 
+.profile-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); } 
+.dropdown-item { padding: 12px 16px; color: var(--text-main); text-decoration: none; font-size: 0.85rem; font-weight: 600; cursor: pointer; background: transparent; border: none; text-align: left; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--glass-border); transition: background 0.2s; width: 100%; } 
+.dropdown-item:last-child { border-bottom: none; color: #ef4444; } 
+.dropdown-item:hover { background: rgba(255, 255, 255, 0.1); } 
+.dropdown-header { padding: 12px 16px; border-bottom: 1px solid var(--glass-border); color: var(--text-muted); font-size: 0.75rem; }
