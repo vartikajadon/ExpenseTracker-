@@ -17,7 +17,7 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' })); // Allow frontend to communicate with backend
 app.use(express.json()); // Parse JSON request bodies
-app.use(express.static('.')); // Serve static files (index.html, etc.) from this directory
+// app.use(express.static('.')); // Vercel handles static files via vercel.json
 
 // Debug Middleware: Log all API requests
 app.use('/api', (req, res, next) => {

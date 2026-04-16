@@ -3,8 +3,8 @@ const router = express.Router();
 const db = require('../database');
 const authenticateToken = require('../middleware/auth');
 const multer = require('multer');
-const pdf = require('pdf-parse');
-const Tesseract = require('tesseract.js');
+// const pdf = require('pdf-parse'); // Moved inside route for serverless performance
+// const Tesseract = require('tesseract.js'); // Moved inside route for serverless performance
 const axios = require('axios');
 
 const upload = multer({
@@ -19,6 +19,9 @@ const upload = multer({
 router.post('/upload-invoice', authenticateToken, upload.single('invoice'), async (req, res) => {
     console.log("📥 Invoice upload started");
     try {
+        const pdf = require('pdf-parse');
+        const Tesseract = require('tesseract.js');
+        
         if (!req.file) return res.status(400).json({ success: false, message: "No file uploaded!" });
         const file = req.file;
         const mimeType = file.mimetype;
