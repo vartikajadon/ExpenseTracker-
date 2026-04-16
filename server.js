@@ -4,7 +4,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authenticateToken = require('./middleware/auth');
 
-// Load environment variables
+// Load environment variables from .env file
 dotenv.config();
 
 const authRoutes = require('./routes/auth');
@@ -15,54 +15,48 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: process.env.FRONTEND_URL || '*' }));
-app.use(express.json());
-app.use(express.static('.'));
+app.use(cors({ origin: process.env.FRONTEND_URL || '*' })); // Allow frontend to communicate with backend
+app.use(express.json()); // Parse JSON request bodies
+app.use(express.static('.')); // Serve static files (index.html, etc.) from this directory
 
-// Health Check & Diagnostics (Helpful for Vercel troubleshooting)
-app.get('/api/health', (req, res) => {
-    res.json({
-        status: 'UP',
-        databaseLinked: !!process.env.DATABASE_URL,
-        googleLinked: !!process.env.GOOGLE_CLIENT_ID,
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
-
-// Debug Logging
+// Debug Middleware: Log all API requests
 app.use('/api', (req, res, next) => {
-    console.log(`[API REQUEST] ${req.method} ${req.originalUrl}`);
+    console.log(`[DEBUG] ${req.method} ${req.originalUrl}`);
     next();
 });
+
+// --- API Routes ---
 
 // Authentication APIs
 app.use('/api/auth', authRoutes);
 
-// Config APIs (Safe fallback)
-app.use('/api/config', (req, res) => {
-    res.json({
-        googleClientId: process.env.GOOGLE_CLIENT_ID || null
-    });
-});
-
 // Protected Expense APIs
 app.use('/api/expenses', expenseRoutes);
+app.use('/api/config', configRoutes);
 
 /**
  * API Endpoint: /api/insights (Protected)
+ * Receives expense summaries from frontend and fetches AI insights from Groq.
  */
 app.post('/api/insights', authenticateToken, async (req, res) => {
     try {
         const { summary, total, budget, categories } = req.body;
+
+        // Structured prompt to guide AI
         const prompt = `Analyze this spending data and provide 3-4 short, actionable financial insights in simple bullet points. 
         Summary Data:
         - Total Spent: ${total}
         - Monthly Budget: ${budget}
         - Spending Breakdown: ${summary}
-        - Top Categories: ${categories ? categories.join(', ') : 'None'}
+        - Top Categories: ${categories.join(', ')}
 
-        Guidelines: Max 3-4 insights, one-line bullet points, simple English.`;
+        Guidelines:
+        - Max 3-4 insights.
+        - One-line bullet points.
+        - Simple English for a beginner user.
+        - Be encouraging but clear about overspending.`;
 
+        // POST request to Groq API using the secure key from .env
         const response = await axios.post('https://api.groq.com/openai/v1/chat/completions', {
             model: "llama-3.3-70b-versatile",
             messages: [{ role: "user", content: prompt }],
@@ -74,19 +68,23 @@ app.post('/api/insights', authenticateToken, async (req, res) => {
             }
         });
 
-        res.status(200).json({ success: true, insights: response.data.choices[0].message.content });
+        const insights = response.data.choices[0].message.content;
+        res.status(200).json({ success: true, insights });
+
     } catch (error) {
-        console.error('AI Insight Error:', error.message);
-        res.status(200).json({ success: false, insights: "Unable to calculate insights right now." });
+        console.error('Error fetching Groq insights:', error.response ? error.response.data : error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: "Unable to fetch insights right now. Please try again later." 
+        });
     }
 });
 
-// Vercel Logic: Only start the server if not running in a serverless environment
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
+// Start the server only if not in production (Vercel handles the listener)
+if (process.env.NODE_ENV !== 'production') {
     app.listen(PORT, () => {
-        console.log(`Server running on http://localhost:${PORT}`);
+        console.log(`Secure AI Backend is running on http://localhost:${PORT}`);
     });
 }
 
-// Export for Vercel
 module.exports = app;
