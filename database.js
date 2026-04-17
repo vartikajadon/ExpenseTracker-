@@ -1,6 +1,12 @@
+require('dotenv').config();
 const { Pool } = require('pg');
 const dns = require('dns');
-require('dotenv').config();
+
+// Masked log for debugging
+if (process.env.DATABASE_URL) {
+    const host = process.env.DATABASE_URL.split('@')[1] || 'unknown';
+    console.log(`🔌 Attempting to connect to database host: ${host.split(':')[0]}`);
+}
 
 // Fix: Prefer IPv4 for DNS resolution to avoid Supabase ENOTFOUND issues in Node.js
 if (dns.setDefaultResultOrder) {
@@ -37,9 +43,12 @@ const query = async (text, params) => {
         console.log('Executed query', { text, duration, rows: res.rowCount });
         return res;
     } catch (error) {
-        console.error('Database query error:', error.message);
+        console.error('❌ [DATABASE ERROR]:', error.message);
         // Special case: Database not connected
-        if (error.message.includes('password authentication') || error.message.includes('getaddrinfo')) {
+        if (error.message.includes('password authentication') || 
+            error.message.includes('getaddrinfo') || 
+            error.message.includes('ENOTFOUND') || 
+            error.message.includes('self-signed certificate')) {
             throw new Error("DATABASE_CONNECTION_ERROR");
         }
         throw error;
