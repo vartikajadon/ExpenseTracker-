@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authenticateToken = require('./middleware/auth');
@@ -17,7 +18,14 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(cors({ origin: process.env.FRONTEND_URL || '*' })); // Allow frontend to communicate with backend
 app.use(express.json()); // Parse JSON request bodies
-app.use(express.static('.')); // Serve static files (index.html, etc.) from this directory
+
+// Serve static files (css, js, images)
+app.use(express.static(path.join(__dirname, '.')));
+
+// Root route - Serve index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Debug Middleware: Log all API requests
 app.use('/api', (req, res, next) => {
